@@ -1,0 +1,89 @@
+<section class="filters-section">
+  <div class="filters-header" (click)="toggleExpand()">
+    <div class="header-content">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+      </svg>
+      <h3>סינון נתונים</h3>
+      @if (hasActiveFilters()) {
+        <span class="active-badge">פילטרים פעילים</span>
+      }
+    </div>
+    <button class="expand-btn" [class.expanded]="isExpanded()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+  </div>
+
+  @if (isExpanded()) {
+    <div class="filters-content">
+      <div class="filters-grid">
+        <!-- Region Filter -->
+        <div class="filter-group">
+          <label for="region">אזור</label>
+          <select id="region" [value]="selectedRegion()" (change)="onRegionChange($event)">
+            @for (region of regions; track region.id) {
+              <option [value]="region.id">{{ region.nameHe }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Property Type Filter -->
+        <div class="filter-group">
+          <label>סוג נכס</label>
+          <div class="property-type-toggle">
+            @for (type of propertyTypes; track type.id) {
+              <button
+                class="type-btn"
+                [class.active]="selectedPropertyType() === type.id"
+                (click)="onPropertyTypeChange(type.id)">
+                {{ type.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Room Count Filter -->
+        <div class="filter-group">
+          <label for="rooms">מספר חדרים</label>
+          <select id="rooms" [value]="selectedRooms()" (change)="onRoomsChange($event)">
+            @for (room of roomOptions; track room.id) {
+              <option [value]="room.id">{{ room.label }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="filter-group date-range">
+          <label>טווח תאריכים</label>
+          <div class="date-inputs">
+            <input
+              type="month"
+              [value]="dateFrom()"
+              (change)="onDateFromChange($event)"
+              placeholder="מתאריך">
+            <span class="date-separator">עד</span>
+            <input
+              type="month"
+              [value]="dateTo()"
+              (change)="onDateToChange($event)"
+              placeholder="עד תאריך">
+          </div>
+        </div>
+      </div>
+
+      <div class="filters-actions">
+        @if (hasActiveFilters()) {
+          <button class="btn btn-secondary" (click)="clearFilters()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            נקה פילטרים
+          </button>
+        }
+      </div>
+    </div>
+  }
+</section>

@@ -1,0 +1,207 @@
+.regional-section {
+  padding: 2rem 0;
+}
+
+.section-header {
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.section-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.regional-insights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.insight-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+}
+
+.insight-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+
+  .highest & {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
+
+  .lowest & {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
+
+  .total & {
+    background: rgba(0, 102, 230, 0.15);
+    color: #0066e6;
+  }
+}
+
+.insight-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.insight-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.insight-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.insight-detail {
+  font-size: 0.813rem;
+  color: var(--text-secondary);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chart-container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+
+  canvas {
+    width: 100% !important;
+
+    &.hidden {
+      opacity: 0;
+    }
+  }
+}
+
+.price-chart {
+  min-height: 350px;
+
+  canvas {
+    height: 280px !important;
+  }
+}
+
+.sales-chart {
+  min-height: 350px;
+
+  canvas {
+    height: 280px !important;
+  }
+}
+
+.chart-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem;
+}
+
+.loading-state {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.regional-table-container {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+.table-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1rem;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.region-name {
+  font-weight: 600;
+}
+
+.price, .price-sqm {
+  font-variant-numeric: tabular-nums;
+}
+
+.sales {
+  font-variant-numeric: tabular-nums;
+}
+
+.change {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+
+  &.positive {
+    color: var(--accent-green);
+  }
+
+  &.negative {
+    color: var(--accent-red);
+  }
+}
+
+@media (max-width: 640px) {
+  .regional-insights {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-card {
+    padding: 1rem;
+  }
+
+  .data-table {
+    font-size: 0.813rem;
+
+    th, td {
+      padding: 0.625rem 0.75rem;
+    }
+  }
+}

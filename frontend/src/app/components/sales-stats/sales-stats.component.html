@@ -1,0 +1,41 @@
+<section class="sales-stats-section">
+  <div class="section-header">
+    <h2 class="section-title">סטטיסטיקת מכירות</h2>
+    <p class="section-subtitle">נתוני מכירות דירות ב-12 החודשים האחרונים</p>
+  </div>
+
+  <div class="stats-summary">
+    <div class="summary-card">
+      <span class="summary-label">סה"כ מכירות</span>
+      <span class="summary-value">{{ getTotalSales().toLocaleString('he-IL') }}</span>
+      <span class="summary-unit">דירות</span>
+    </div>
+    <div class="summary-card">
+      <span class="summary-label">ממוצע חודשי</span>
+      <span class="summary-value">{{ getAverageMonthlySales().toLocaleString('he-IL') }}</span>
+      <span class="summary-unit">דירות/חודש</span>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-container sales-chart">
+      <h3 class="chart-title">מכירות לפי חודש</h3>
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+        </div>
+      }
+      <canvas #salesChart [class.hidden]="loading()"></canvas>
+    </div>
+
+    <div class="chart-container composition-chart">
+      <h3 class="chart-title">התפלגות סוגי נכסים</h3>
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+        </div>
+      }
+      <canvas #compositionChart [class.hidden]="loading()"></canvas>
+    </div>
+  </div>
+</section>

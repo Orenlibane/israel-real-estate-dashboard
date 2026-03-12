@@ -1,0 +1,140 @@
+<section class="table-section">
+  <div class="section-header">
+    <div class="header-text">
+      <h2 class="section-title">נתונים היסטוריים</h2>
+      <p class="section-subtitle">{{ marketType() === 'new-dwellings' ? 'מדד מחירי דירות חדשות' : 'מדד מחירי דירות כללי' }} וריביות</p>
+    </div>
+
+    <div class="table-actions">
+      <div class="search-wrapper">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="חיפוש לפי תאריך..."
+          [value]="searchQuery()"
+          (input)="onSearch($event)"
+        >
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </div>
+
+      <button class="btn btn-secondary" (click)="exportCSV()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        ייצוא CSV
+      </button>
+    </div>
+  </div>
+
+  <div class="data-table-container">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>טוען נתונים...</span>
+      </div>
+    } @else if (filteredData().length === 0) {
+      <div class="empty-state">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <span>לא נמצאו תוצאות</span>
+      </div>
+    } @else {
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th (click)="sort('date')" class="sortable">
+                <span>תאריך</span>
+                <span class="sort-indicator" [attr.data-direction]="getSortIcon('date')">
+                  @if (getSortIcon('date') === 'asc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  } @else if (getSortIcon('date') === 'desc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><polyline points="6 9 12 5 18 9"></polyline><polyline points="6 15 12 19 18 15"></polyline></svg>
+                  }
+                </span>
+              </th>
+              <th (click)="sort('priceIndex')" class="sortable">
+                <span>מדד מחירים</span>
+                <span class="sort-indicator" [attr.data-direction]="getSortIcon('priceIndex')">
+                  @if (getSortIcon('priceIndex') === 'asc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  } @else if (getSortIcon('priceIndex') === 'desc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><polyline points="6 9 12 5 18 9"></polyline><polyline points="6 15 12 19 18 15"></polyline></svg>
+                  }
+                </span>
+              </th>
+              <th (click)="sort('priceChangePercent')" class="sortable">
+                <span>שינוי %</span>
+                <span class="sort-indicator" [attr.data-direction]="getSortIcon('priceChangePercent')">
+                  @if (getSortIcon('priceChangePercent') === 'asc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  } @else if (getSortIcon('priceChangePercent') === 'desc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><polyline points="6 9 12 5 18 9"></polyline><polyline points="6 15 12 19 18 15"></polyline></svg>
+                  }
+                </span>
+              </th>
+              <th (click)="sort('interestRate')" class="sortable">
+                <span>ריבית %</span>
+                <span class="sort-indicator" [attr.data-direction]="getSortIcon('interestRate')">
+                  @if (getSortIcon('interestRate') === 'asc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                  } @else if (getSortIcon('interestRate') === 'desc') {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                  } @else {
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" opacity="0.4"><polyline points="6 9 12 5 18 9"></polyline><polyline points="6 15 12 19 18 15"></polyline></svg>
+                  }
+                </span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filteredData(); track row.date) {
+              <tr>
+                <td class="date-cell">{{ row.formattedDate }}</td>
+                <td class="value-cell">{{ row.priceIndex?.toFixed(2) ?? '-' }}</td>
+                <td class="change-cell" [class]="getTrendClass(row.priceChangePercent)">
+                  @if (row.priceChangePercent !== null) {
+                    <span class="change-badge" [class]="getTrendClass(row.priceChangePercent)">
+                      @if (row.priceChangePercent > 0) {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                      } @else if (row.priceChangePercent < 0) {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                      }
+                      {{ row.priceChangePercent >= 0 ? '+' : '' }}{{ row.priceChangePercent.toFixed(2) }}%
+                    </span>
+                  } @else {
+                    <span class="na">-</span>
+                  }
+                </td>
+                <td class="rate-cell">
+                  @if (row.interestRate !== null) {
+                    {{ row.interestRate.toFixed(2) }}%
+                  } @else {
+                    <span class="na">-</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-footer">
+        <span class="record-count">{{ filteredData().length }} רשומות</span>
+      </div>
+    }
+  </div>
+</section>

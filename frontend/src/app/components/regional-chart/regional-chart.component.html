@@ -1,0 +1,111 @@
+<section class="regional-section">
+  <div class="section-header">
+    <h2 class="section-title">ניתוח אזורי</h2>
+    <p class="section-subtitle">השוואת מחירים ומכירות לפי אזורים גיאוגרפיים</p>
+  </div>
+
+  <div class="regional-insights">
+    @if (getHighestPriceRegion(); as highest) {
+      <div class="insight-card highest">
+        <div class="insight-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+            <polyline points="17 6 23 6 23 12"></polyline>
+          </svg>
+        </div>
+        <div class="insight-content">
+          <span class="insight-label">האזור היקר ביותר</span>
+          <span class="insight-value">{{ highest.regionHe }}</span>
+          <span class="insight-detail">₪{{ highest.averagePrice.toLocaleString('he-IL') }}</span>
+        </div>
+      </div>
+    }
+
+    @if (getLowestPriceRegion(); as lowest) {
+      <div class="insight-card lowest">
+        <div class="insight-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
+            <polyline points="17 18 23 18 23 12"></polyline>
+          </svg>
+        </div>
+        <div class="insight-content">
+          <span class="insight-label">האזור הזול ביותר</span>
+          <span class="insight-value">{{ lowest.regionHe }}</span>
+          <span class="insight-detail">₪{{ lowest.averagePrice.toLocaleString('he-IL') }}</span>
+        </div>
+      </div>
+    }
+
+    <div class="insight-card total">
+      <div class="insight-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <div class="insight-content">
+        <span class="insight-label">סה"כ מכירות</span>
+        <span class="insight-value">{{ getTotalRegionalSales().toLocaleString('he-IL') }}</span>
+        <span class="insight-detail">בכל האזורים</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-container price-chart">
+      <h3 class="chart-title">מחיר ממוצע לפי אזור</h3>
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+        </div>
+      }
+      <canvas #priceChart [class.hidden]="loading()"></canvas>
+    </div>
+
+    <div class="chart-container sales-chart">
+      <h3 class="chart-title">התפלגות מכירות לפי אזור</h3>
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+        </div>
+      }
+      <canvas #salesChart [class.hidden]="loading()"></canvas>
+    </div>
+  </div>
+
+  <!-- Regional Data Table -->
+  <div class="regional-table-container">
+    <h3 class="table-title">פירוט נתונים אזוריים</h3>
+    <div class="table-wrapper">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>אזור</th>
+            <th>מחיר ממוצע</th>
+            <th>מחיר למ"ר</th>
+            <th>מכירות</th>
+            <th>שינוי</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (region of regionalData(); track region.region) {
+            <tr>
+              <td class="region-name">{{ region.regionHe }}</td>
+              <td class="price">₪{{ region.averagePrice.toLocaleString('he-IL') }}</td>
+              <td class="price-sqm">₪{{ region.pricePerSqm.toLocaleString('he-IL') }}</td>
+              <td class="sales">{{ region.sales.toLocaleString('he-IL') }}</td>
+              <td class="change" [class.positive]="region.change && region.change > 0" [class.negative]="region.change && region.change < 0">
+                @if (region.change) {
+                  {{ region.change > 0 ? '+' : '' }}{{ region.change.toFixed(1) }}%
+                } @else {
+                  -
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>

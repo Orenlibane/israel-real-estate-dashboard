@@ -1,0 +1,45 @@
+<section class="chart-section">
+  <div class="section-header">
+    <h2 class="section-title">מתאם מחירים וריביות</h2>
+    <p class="section-subtitle">השוואה בין מדד מחירי הדירות לריבית בנק ישראל לאורך זמן</p>
+  </div>
+
+  <div class="chart-container">
+    @if (loading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>טוען גרף...</span>
+      </div>
+    }
+    <canvas #chartCanvas [class.hidden]="loading()"></canvas>
+  </div>
+
+  <div class="chart-insights">
+    <div class="insight-card">
+      <div class="insight-icon blue">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <div class="insight-content">
+        <span class="insight-label">קו כחול</span>
+        <span class="insight-text">מדד מחירי {{ marketType() === 'new-dwellings' ? 'דירות חדשות' : 'דירות כללי' }}</span>
+      </div>
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-icon green">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="19" y1="5" x2="5" y2="19"></line>
+          <circle cx="6.5" cy="6.5" r="2.5"></circle>
+          <circle cx="17.5" cy="17.5" r="2.5"></circle>
+        </svg>
+      </div>
+      <div class="insight-content">
+        <span class="insight-label">קו ירוק מקווקו</span>
+        <span class="insight-text">ריבית בנק ישראל</span>
+      </div>
+    </div>
+  </div>
+</section>
