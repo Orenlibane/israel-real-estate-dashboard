@@ -2,8 +2,10 @@ import { Component, inject, OnInit, OnDestroy, ViewChild, ElementRef, effect } f
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
+import { combineLatest } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { ThemeService } from '../../services/theme.service';
+import { PriceIndexData, InterestRateData, FilterOptions } from '../../models/data.models';
 
 Chart.register(...registerables);
 
@@ -21,16 +23,43 @@ export class CorrelationChartComponent implements OnInit, OnDestroy {
   private themeService = inject(ThemeService);
   private chart: Chart | null = null;
 
-  priceData = toSignal(this.dataService.priceIndex$, { initialValue: [] });
-  interestData = toSignal(this.dataService.interestRates$, { initialValue: [] });
+  // Combine all data sources with filters
+  private defaultFilters: FilterOptions = {
+    region: null,
+    dateFrom: null,
+    dateTo: null,
+    propertyType: null,
+    roomCount: null
+  };
+
+  combinedData = toSignal(
+    combineLatest([
+      this.dataService.priceIndex$,
+      this.dataService.interestRates$,
+      this.dataService.filters$
+    ])
+  , { initialValue: [[], [], this.defaultFilters] as [PriceIndexData[], InterestRateData[], FilterOptions] });
+
   loading = toSignal(this.dataService.loading$, { initialValue: false });
   marketType = toSignal(this.dataService.marketType$, { initialValue: 'new-dwellings' as const });
 
   constructor() {
     effect(() => {
-      const prices = this.priceData();
-      const rates = this.interestData();
+      const [rawPrices, rawRates, filters] = this.combinedData() as [PriceIndexData[], InterestRateData[], FilterOptions];
       const isDark = this.themeService.isDarkMode();
+
+      // Apply date filters
+      let prices = [...rawPrices];
+      let rates = [...rawRates];
+
+      if (filters.dateFrom) {
+        prices = prices.filter(p => p.date >= filters.dateFrom!);
+        rates = rates.filter(r => r.date >= filters.dateFrom!);
+      }
+      if (filters.dateTo) {
+        prices = prices.filter(p => p.date <= filters.dateTo!);
+        rates = rates.filter(r => r.date <= filters.dateTo!);
+      }
 
       if (prices.length > 0 || rates.length > 0) {
         this.updateChart(prices, rates, isDark);

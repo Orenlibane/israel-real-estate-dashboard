@@ -2,9 +2,10 @@ import { Component, inject, OnInit, OnDestroy, ViewChild, ElementRef, effect } f
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
+import { combineLatest } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { ThemeService } from '../../services/theme.service';
-import { RegionalData } from '../../models/data.models';
+import { RegionalData, FilterOptions } from '../../models/data.models';
 
 Chart.register(...registerables);
 
@@ -25,18 +26,48 @@ export class RegionalChartComponent implements OnInit, OnDestroy {
   private priceChart: Chart | null = null;
   private salesChart: Chart | null = null;
 
-  regionalData = toSignal(this.dataService.regionalData$, { initialValue: [] });
+  // Combine regional data with filters
+  private defaultFilters: FilterOptions = {
+    region: null,
+    dateFrom: null,
+    dateTo: null,
+    propertyType: null,
+    roomCount: null
+  };
+
+  combinedData = toSignal(
+    combineLatest([
+      this.dataService.regionalData$,
+      this.dataService.filters$
+    ])
+  , { initialValue: [[], this.defaultFilters] as [RegionalData[], FilterOptions] });
+
   loading = toSignal(this.dataService.loading$, { initialValue: false });
 
   constructor() {
     effect(() => {
-      const data = this.regionalData();
+      const [rawData, filters] = this.combinedData() as [RegionalData[], FilterOptions];
       const isDark = this.themeService.isDarkMode();
+
+      // Apply region filter
+      let data = [...rawData];
+      if (filters.region && filters.region !== 'all') {
+        data = data.filter(d => d.region === filters.region);
+      }
 
       if (data.length > 0) {
         this.updateCharts(data, isDark);
       }
     });
+  }
+
+  regionalData(): RegionalData[] {
+    const [rawData, filters] = this.combinedData() as [RegionalData[], FilterOptions];
+    let data = [...rawData];
+    if (filters.region && filters.region !== 'all') {
+      data = data.filter(d => d.region === filters.region);
+    }
+    return data;
   }
 
   ngOnInit(): void {

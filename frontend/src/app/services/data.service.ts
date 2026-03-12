@@ -411,14 +411,38 @@ export class DataService {
     return data;
   }
 
-  // Filtered data getters
-  getFilteredSalesData(): Observable<SalesData[]> {
-    return this.salesData$.pipe(
-      map(data => this.applyFilters(data))
+  // Filtered data getters - combine data with filters reactively
+  getFilteredPriceData(): Observable<PriceIndexData[]> {
+    return this.priceIndex$.pipe(
+      map(data => this.applyDateFilters(data))
     );
   }
 
-  private applyFilters<T extends { date: string }>(data: T[]): T[] {
+  getFilteredInterestData(): Observable<InterestRateData[]> {
+    return this.interestRates$.pipe(
+      map(data => this.applyDateFilters(data))
+    );
+  }
+
+  getFilteredSalesData(): Observable<SalesData[]> {
+    return this.salesData$.pipe(
+      map(data => this.applySalesFilters(data))
+    );
+  }
+
+  getFilteredRegionalData(): Observable<RegionalData[]> {
+    return this.regionalData$.pipe(
+      map(data => this.applyRegionalFilters(data))
+    );
+  }
+
+  getFilteredTransactions(): Observable<TransactionData[]> {
+    return this.transactions$.pipe(
+      map(data => this.applyDateFilters(data))
+    );
+  }
+
+  private applyDateFilters<T extends { date: string }>(data: T[]): T[] {
     const filters = this.filtersSubject.getValue();
     let filtered = [...data];
 
@@ -430,6 +454,46 @@ export class DataService {
     }
 
     return filtered;
+  }
+
+  private applySalesFilters(data: SalesData[]): SalesData[] {
+    const filters = this.filtersSubject.getValue();
+    let filtered = this.applyDateFilters(data);
+
+    // Property type filter
+    if (filters.propertyType === 'new') {
+      // Return only new apartments data (transform to show only new)
+      filtered = filtered.map(d => ({
+        ...d,
+        totalSales: d.newApartments,
+        secondHand: 0
+      }));
+    } else if (filters.propertyType === 'second-hand') {
+      // Return only second-hand data
+      filtered = filtered.map(d => ({
+        ...d,
+        totalSales: d.secondHand,
+        newApartments: 0
+      }));
+    }
+
+    return filtered;
+  }
+
+  private applyRegionalFilters(data: RegionalData[]): RegionalData[] {
+    const filters = this.filtersSubject.getValue();
+    let filtered = [...data];
+
+    if (filters.region && filters.region !== 'all') {
+      filtered = filtered.filter(d => d.region === filters.region);
+    }
+
+    return filtered;
+  }
+
+  // Notify components when filters change
+  onFiltersChange(): Observable<FilterOptions> {
+    return this.filters$;
   }
 
   // Get latest values for KPIs

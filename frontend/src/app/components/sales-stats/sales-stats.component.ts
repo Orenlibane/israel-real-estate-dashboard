@@ -2,8 +2,10 @@ import { Component, inject, OnInit, OnDestroy, ViewChild, ElementRef, effect } f
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Chart, registerables } from 'chart.js';
+import { combineLatest } from 'rxjs';
 import { DataService } from '../../services/data.service';
 import { ThemeService } from '../../services/theme.service';
+import { SalesData, FilterOptions } from '../../models/data.models';
 
 Chart.register(...registerables);
 
@@ -24,16 +26,41 @@ export class SalesStatsComponent implements OnInit, OnDestroy {
   private salesChart: Chart | null = null;
   private compositionChart: Chart | null = null;
 
-  salesData = toSignal(this.dataService.salesData$, { initialValue: [] });
+  // Default filters
+  private defaultFilters: FilterOptions = {
+    region: null,
+    dateFrom: null,
+    dateTo: null,
+    propertyType: null,
+    roomCount: null
+  };
+
+  // Use filtered data that reacts to filter changes
+  salesData = toSignal(
+    combineLatest([
+      this.dataService.salesData$,
+      this.dataService.filters$
+    ])
+  , { initialValue: [[], this.defaultFilters] as [SalesData[], FilterOptions] });
+
   loading = toSignal(this.dataService.loading$, { initialValue: false });
 
   constructor() {
     effect(() => {
-      const data = this.salesData();
+      const [rawData, filters] = this.salesData() as [SalesData[], FilterOptions];
       const isDark = this.themeService.isDarkMode();
 
+      // Apply filters manually
+      let data = [...rawData];
+      if (filters.dateFrom) {
+        data = data.filter(d => d.date >= filters.dateFrom!);
+      }
+      if (filters.dateTo) {
+        data = data.filter(d => d.date <= filters.dateTo!);
+      }
+
       if (data.length > 0) {
-        this.updateCharts(data, isDark);
+        this.updateCharts(data, isDark, filters.propertyType);
       }
     });
   }
@@ -187,14 +214,22 @@ export class SalesStatsComponent implements OnInit, OnDestroy {
     });
   }
 
-  private updateCharts(data: any[], isDark: boolean): void {
+  private updateCharts(data: any[], isDark: boolean, propertyType?: string | null): void {
     const colors = this.getChartColors(isDark);
 
     // Take last 12 months
     const recentData = data.slice(-12);
     const labels = recentData.map(d => this.formatDate(d.date));
-    const newApartments = recentData.map(d => d.newApartments);
-    const secondHand = recentData.map(d => d.secondHand);
+
+    // Apply property type filter
+    let newApartments = recentData.map(d => d.newApartments);
+    let secondHand = recentData.map(d => d.secondHand);
+
+    if (propertyType === 'new') {
+      secondHand = secondHand.map(() => 0);
+    } else if (propertyType === 'second-hand') {
+      newApartments = newApartments.map(() => 0);
+    }
 
     // Update sales chart
     if (this.salesChart) {
@@ -221,8 +256,8 @@ export class SalesStatsComponent implements OnInit, OnDestroy {
 
     // Update composition chart with totals
     if (this.compositionChart) {
-      const totalNew = recentData.reduce((sum, d) => sum + d.newApartments, 0);
-      const totalSecondHand = recentData.reduce((sum, d) => sum + d.secondHand, 0);
+      const totalNew = newApartments.reduce((sum, val) => sum + val, 0);
+      const totalSecondHand = secondHand.reduce((sum, val) => sum + val, 0);
 
       this.compositionChart.data.datasets[0].data = [totalNew, totalSecondHand];
       this.compositionChart.data.datasets[0].backgroundColor = [colors.newColor, colors.secondHandColor];
@@ -253,14 +288,28 @@ export class SalesStatsComponent implements OnInit, OnDestroy {
     }).format(date);
   }
 
+  getFilteredData(): SalesData[] {
+    const [rawData, filters] = this.salesData() as [SalesData[], FilterOptions];
+    let data = [...rawData];
+
+    if (filters.dateFrom) {
+      data = data.filter(d => d.date >= filters.dateFrom!);
+    }
+    if (filters.dateTo) {
+      data = data.filter(d => d.date <= filters.dateTo!);
+    }
+
+    return data;
+  }
+
   getTotalSales(): number {
-    const data = this.salesData();
+    const data = this.getFilteredData();
     if (data.length === 0) return 0;
     return data.slice(-12).reduce((sum, d) => sum + d.totalSales, 0);
   }
 
   getAverageMonthlySales(): number {
-    const data = this.salesData();
+    const data = this.getFilteredData();
     if (data.length === 0) return 0;
     const recent = data.slice(-12);
     return Math.round(recent.reduce((sum, d) => sum + d.totalSales, 0) / recent.length);
