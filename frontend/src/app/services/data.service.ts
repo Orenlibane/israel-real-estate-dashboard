@@ -17,12 +17,31 @@ import {
 } from '../models/data.models';
 import { environment } from '../../environments/environment';
 
+// Seeded random number generator for consistent mock data
+class SeededRandom {
+  private seed: number;
+
+  constructor(seed: number) {
+    this.seed = seed;
+  }
+
+  next(): number {
+    this.seed = (this.seed * 1103515245 + 12345) & 0x7fffffff;
+    return this.seed / 0x7fffffff;
+  }
+
+  reset(seed: number): void {
+    this.seed = seed;
+  }
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
   private http = inject(HttpClient);
   private readonly API_BASE = environment.apiUrl;
+  private random = new SeededRandom(12345);
 
   // State management with BehaviorSubjects
   private loadingSubject = new BehaviorSubject<boolean>(false);
@@ -248,8 +267,9 @@ export class DataService {
     return this.generateMockTransactionData();
   }
 
-  // Mock data generators
+  // Mock data generators - using seeded random for consistent data
   private generateMockPriceData(): PriceIndexData[] {
+    this.random.reset(11111);
     const data: PriceIndexData[] = [];
     const baseValue = 100;
     const startDate = new Date('2021-01-01');
@@ -258,7 +278,7 @@ export class DataService {
       const date = new Date(startDate);
       date.setMonth(date.getMonth() + i);
 
-      const randomChange = (Math.random() - 0.3) * 2;
+      const randomChange = (this.random.next() - 0.3) * 2;
       const prevValue = i > 0 ? data[i - 1].value : baseValue;
       const value = prevValue * (1 + randomChange / 100);
 
@@ -274,6 +294,7 @@ export class DataService {
   }
 
   private generateMockInterestData(): InterestRateData[] {
+    this.random.reset(22222);
     const data: InterestRateData[] = [];
     let rate = 0.1;
     const startDate = new Date('2021-01-01');
@@ -282,7 +303,7 @@ export class DataService {
       const date = new Date(startDate);
       date.setMonth(date.getMonth() + i);
 
-      rate += (Math.random() - 0.4) * 0.25;
+      rate += (this.random.next() - 0.4) * 0.25;
       rate = Math.max(0.1, Math.min(6, rate));
 
       data.push({
@@ -296,6 +317,7 @@ export class DataService {
   }
 
   private generateMockSalesData(): SalesData[] {
+    this.random.reset(33333);
     const data: SalesData[] = [];
     const startDate = new Date('2021-01-01');
     let baseSales = 8000;
@@ -307,10 +329,10 @@ export class DataService {
       // Seasonal variation + trend
       const seasonal = Math.sin((i / 12) * Math.PI * 2) * 1000;
       const trend = i * 20;
-      const random = (Math.random() - 0.5) * 1500;
+      const random = (this.random.next() - 0.5) * 1500;
       const totalSales = Math.round(baseSales + seasonal + trend + random);
 
-      const newApartments = Math.round(totalSales * (0.25 + Math.random() * 0.1));
+      const newApartments = Math.round(totalSales * (0.25 + this.random.next() * 0.1));
       const secondHand = totalSales - newApartments;
 
       const prevSales = i > 0 ? data[i - 1].totalSales : totalSales;
@@ -331,6 +353,7 @@ export class DataService {
   }
 
   private generateMockRegionalData(): RegionalData[] {
+    this.random.reset(44444);
     const regions = REGIONS.filter(r => r.id !== 'all');
 
     return regions.map(region => {
@@ -345,7 +368,7 @@ export class DataService {
       };
 
       const basePrice = basePrices[region.id] || 2000000;
-      const variation = (Math.random() - 0.5) * 0.2;
+      const variation = (this.random.next() - 0.5) * 0.2;
       const averagePrice = Math.round(basePrice * (1 + variation));
 
       const baseSales: { [key: string]: number } = {
@@ -358,10 +381,10 @@ export class DataService {
         'judea-samaria': 600
       };
 
-      const sales = Math.round((baseSales[region.id] || 1000) * (0.8 + Math.random() * 0.4));
-      const avgSqm = 80 + Math.random() * 40;
+      const sales = Math.round((baseSales[region.id] || 1000) * (0.8 + this.random.next() * 0.4));
+      const avgSqm = 80 + this.random.next() * 40;
       const pricePerSqm = Math.round(averagePrice / avgSqm);
-      const change = (Math.random() - 0.4) * 10;
+      const change = (this.random.next() - 0.4) * 10;
 
       return {
         region: region.id,
@@ -375,6 +398,7 @@ export class DataService {
   }
 
   private generateMockTransactionData(): TransactionData[] {
+    this.random.reset(55555);
     const data: TransactionData[] = [];
     const startDate = new Date('2021-01-01');
 
@@ -382,8 +406,8 @@ export class DataService {
       const date = new Date(startDate);
       date.setMonth(date.getMonth() + i);
 
-      const count = Math.round(7000 + Math.random() * 4000 + i * 30);
-      const averageValue = Math.round(2000000 + Math.random() * 500000 + i * 15000);
+      const count = Math.round(7000 + this.random.next() * 4000 + i * 30);
+      const averageValue = Math.round(2000000 + this.random.next() * 500000 + i * 15000);
       const totalValue = count * averageValue;
 
       data.push({
