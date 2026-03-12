@@ -184,33 +184,24 @@ export class DataService {
 
   private transformCBSData(response: CBSResponse): PriceIndexData[] {
     if (!response.success || !response.data) {
+      console.log('CBS response not successful, using mock data');
       return this.generateMockPriceData();
     }
 
     try {
       const rawData = response.data;
 
-      if (Array.isArray(rawData)) {
-        return rawData.map((item: any, index: number, arr: any[]) => {
-          const prevValue = index > 0 ? arr[index - 1].value || arr[index - 1].Value : null;
-          const currentValue = item.value || item.Value || 0;
-          const change = prevValue ? currentValue - prevValue : 0;
-          const changePercent = prevValue ? ((change / prevValue) * 100) : 0;
-
-          return {
-            date: item.date || item.Date || item.period || '',
-            value: currentValue,
-            change,
-            changePercent
-          };
-        });
+      // Data is already transformed by the server
+      if (Array.isArray(rawData) && rawData.length > 0) {
+        return rawData.map((item: any) => ({
+          date: item.date || '',
+          value: item.value || 0,
+          change: item.change || 0,
+          changePercent: item.changePercent || 0
+        }));
       }
 
-      if (rawData.Data || rawData.data) {
-        const dataArray = rawData.Data || rawData.data;
-        return this.transformCBSData({ ...response, data: dataArray });
-      }
-
+      console.log('CBS data not in expected format:', rawData);
       return this.generateMockPriceData();
     } catch (e) {
       console.error('Error transforming CBS data:', e);
@@ -220,25 +211,23 @@ export class DataService {
 
   private transformBOIData(response: BOIResponse): InterestRateData[] {
     if (!response.success || !response.data) {
+      console.log('BOI response not successful, using mock data');
       return this.generateMockInterestData();
     }
 
     try {
       const rawData = response.data;
 
-      if (Array.isArray(rawData)) {
+      // Data is already transformed by the server
+      if (Array.isArray(rawData) && rawData.length > 0) {
         return rawData.map((item: any) => ({
-          date: item.date || item.Date || item.TimePeriod || '',
-          rate: parseFloat(item.rate || item.Rate || item.Value || 0),
-          type: item.type || item.Type || 'general'
+          date: item.date || '',
+          rate: parseFloat(item.rate) || 0,
+          type: item.type || 'prime'
         }));
       }
 
-      if (rawData.InterestRates || rawData.Series) {
-        const rates = rawData.InterestRates || rawData.Series;
-        return this.transformBOIData({ ...response, data: rates });
-      }
-
+      console.log('BOI data not in expected format:', rawData);
       return this.generateMockInterestData();
     } catch (e) {
       console.error('Error transforming BOI data:', e);
